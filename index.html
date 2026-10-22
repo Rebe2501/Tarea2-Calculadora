@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calculadora de Rebeca</title>
+  <link rel="icon" href="data:,">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&family=Poppins:wght@500;600;700&display=swap">
+  <link rel="stylesheet" href="css/estilos.css">
+</head>
+<body>
+  <header class="encabezado">
+    <h1>Calculadora WEB</h1>
+    <p>Suma, resta, multiplicación y división con historial guardado en el navegador</p>
+  </header>
+
+  <main class="contenedor">
+    <section class="tarjeta calculadora" aria-label="Calculadora">
+      <div class="visor" aria-live="polite">
+        <div id="visorOperacion" class="visor-operacion"></div>
+        <div id="visorNumero" class="visor-numero">0</div>
+      </div>
+
+      <div id="teclado" class="teclado">
+        <button type="button" class="tecla tecla-funcion tecla-doble" data-accion="limpiar">C</button>
+        <button type="button" class="tecla tecla-funcion" data-accion="retroceso" aria-label="Borrar último dígito">⌫</button>
+        <button type="button" class="tecla tecla-operador" data-accion="operador" data-valor="/">÷</button>
+
+        <button type="button" class="tecla" data-accion="digito" data-valor="7">7</button>
+        <button type="button" class="tecla" data-accion="digito" data-valor="8">8</button>
+        <button type="button" class="tecla" data-accion="digito" data-valor="9">9</button>
+        <button type="button" class="tecla tecla-operador" data-accion="operador" data-valor="*">×</button>
+
+        <button type="button" class="tecla" data-accion="digito" data-valor="4">4</button>
+        <button type="button" class="tecla" data-accion="digito" data-valor="5">5</button>
+        <button type="button" class="tecla" data-accion="digito" data-valor="6">6</button>
+        <button type="button" class="tecla tecla-operador" data-accion="operador" data-valor="-">−</button>
+
+        <button type="button" class="tecla" data-accion="digito" data-valor="1">1</button>
+        <button type="button" class="tecla" data-accion="digito" data-valor="2">2</button>
+        <button type="button" class="tecla" data-accion="digito" data-valor="3">3</button>
+        <button type="button" class="tecla tecla-operador" data-accion="operador" data-valor="+">+</button>
+
+        <button type="button" class="tecla" data-accion="digito" data-valor="0">0</button>
+        <button type="button" class="tecla" data-accion="digito" data-valor=".">.</button>
+        <button type="button" class="tecla tecla-igual tecla-doble" data-accion="igual">=</button>
+      </div>
+
+      <p class="ayuda">También funciona con el teclado: números, <kbd>+</kbd> <kbd>-</kbd> <kbd>*</kbd> <kbd>/</kbd>, <kbd>Enter</kbd>, <kbd>Retroceso</kbd> y <kbd>Esc</kbd>.</p>
+    </section>
+
+    <section class="tarjeta historial" aria-label="Historial de cálculos">
+      <div class="historial-cabecera">
+        <h2>Historial</h2>
+        <span id="contador" class="contador">0</span>
+      </div>
+      <p id="historialVacio" class="historial-vacio">Todavía no hay cálculos guardados.</p>
+      <ol id="listaHistorial" class="historial-lista"></ol>
+      <button type="button" id="btnEliminar" class="boton-pildora">Eliminar historial</button>
+    </section>
+  </main>
+
+  <footer class="pie">Rebeca Mary Astacio Bryan · Matrícula 2025-2264 · Programación WEB – ITLA</footer>
+
+  <script src="js/calculadora.js"></script>
+</body>
+</html>

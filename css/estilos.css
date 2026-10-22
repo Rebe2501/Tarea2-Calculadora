@@ -1,0 +1,337 @@
+/* ===== Paleta de Rebeca (lila / rosa) ===== */
+:root {
+  --fondo: #faf5ff;
+  --violeta: #7c3aed;
+  --rosa: #ec4899;
+  --tinta: #2d1b4e;
+  --borde: #e9d5ff;
+  --lila-suave: #f3e8ff;
+  --radio: 16px;
+  --sombra: 0 10px 30px rgba(124, 58, 237, 0.14);
+  --degradado: linear-gradient(135deg, var(--violeta), var(--rosa));
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--fondo);
+  background-image:
+    radial-gradient(circle at 8% 0%, #fce7f3 0, transparent 38%),
+    radial-gradient(circle at 92% 100%, #ede9fe 0, transparent 42%);
+  color: var(--tinta);
+  font-family: "Nunito", sans-serif;
+}
+
+h1,
+h2 {
+  font-family: "Poppins", sans-serif;
+  margin: 0;
+}
+
+/* ===== Encabezado y pie ===== */
+.encabezado {
+  text-align: center;
+  padding: 22px 16px 6px;
+}
+
+.encabezado h1 {
+  font-size: 1.9rem;
+  background: var(--degradado);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.encabezado p {
+  margin: 4px 0 0;
+  color: #6b4f8f;
+}
+
+.pie {
+  text-align: center;
+  font-size: 0.85rem;
+  color: #8a6fb0;
+  padding: 4px 16px 18px;
+}
+
+/* ===== Distribución ===== */
+.contenedor {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: stretch;
+  gap: 24px;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+.tarjeta {
+  background: #fff;
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  box-shadow: var(--sombra);
+  padding: 20px;
+}
+
+.calculadora {
+  width: 340px;
+  max-width: 100%;
+}
+
+.historial {
+  flex: 1 1 320px;
+  max-width: 440px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ===== Pantalla de dos líneas ===== */
+.visor {
+  background: linear-gradient(135deg, #f5f3ff, #fdf2f8);
+  border: 1px solid var(--borde);
+  border-radius: 12px;
+  padding: 10px 16px;
+  margin-bottom: 16px;
+  text-align: right;
+  height: 96px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.visor-operacion {
+  min-height: 1.4em;
+  font-size: 0.95rem;
+  color: #8b5cf6;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.visor-numero {
+  font-family: "Poppins", sans-serif;
+  font-size: 2.3rem;
+  font-weight: 600;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+/* numeros muy largos usan letra mas pequena para caber en la pantalla */
+.visor-numero.largo {
+  font-size: 1.5rem;
+}
+
+.visor-numero.error {
+  font-size: 1.05rem;
+  line-height: 1.3;
+  color: #db2777;
+}
+
+/* ===== Teclas con efecto de pulsación ===== */
+.teclado {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.tecla {
+  --sombra-tecla: #e9d5ff;
+  height: 54px;
+  border: 1px solid var(--borde);
+  border-radius: 14px;
+  background: #fff;
+  color: var(--tinta);
+  font-family: "Poppins", sans-serif;
+  font-size: 1.25rem;
+  cursor: pointer;
+  box-shadow: 0 4px 0 var(--sombra-tecla);
+  transition: transform 0.08s, box-shadow 0.08s, background 0.15s;
+}
+
+.tecla:hover {
+  background: var(--lila-suave);
+}
+
+.tecla:active,
+.tecla.pulsada {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 var(--sombra-tecla);
+}
+
+.tecla:focus-visible {
+  outline: 3px solid #c4b5fd;
+  outline-offset: 2px;
+}
+
+.tecla-doble {
+  grid-column: span 2;
+}
+
+.tecla-funcion {
+  --sombra-tecla: #fbcfe8;
+  background: #fdf2f8;
+  border-color: #fbcfe8;
+  color: #be185d;
+}
+
+.tecla-funcion:hover {
+  background: #fce7f3;
+}
+
+.tecla-operador {
+  --sombra-tecla: #ddd6fe;
+  background: #ede9fe;
+  color: var(--violeta);
+  font-weight: 700;
+}
+
+/* operador elegido que espera el segundo número */
+.tecla-operador.activo {
+  background: var(--violeta);
+  border-color: var(--violeta);
+  color: #fff;
+}
+
+.tecla-igual {
+  --sombra-tecla: #a21caf;
+  border: none;
+  background: var(--degradado);
+  color: #fff;
+  font-weight: 700;
+}
+
+.tecla-igual:hover {
+  background: var(--degradado);
+  filter: brightness(1.08);
+}
+
+.ayuda {
+  margin: 16px 0 0;
+  font-size: 0.82rem;
+  color: #7a5ea3;
+  line-height: 1.6;
+}
+
+kbd {
+  font-family: "Nunito", sans-serif;
+  font-size: 0.75rem;
+  background: var(--lila-suave);
+  border: 1px solid var(--borde);
+  border-radius: 6px;
+  padding: 0 5px;
+}
+
+/* ===== Historial ===== */
+.historial-cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.historial-cabecera h2 {
+  font-size: 1.3rem;
+  color: var(--violeta);
+}
+
+.contador {
+  min-width: 32px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: var(--degradado);
+  color: #fff;
+  font-weight: 700;
+  text-align: center;
+}
+
+.historial-vacio {
+  flex: 1;
+  margin: 0;
+  padding: 24px 12px;
+  text-align: center;
+  color: #9d84c2;
+  border: 2px dashed var(--borde);
+  border-radius: 12px;
+}
+
+.historial-lista {
+  flex: 1;
+  list-style: none;
+  margin: 0;
+  padding: 0 4px 0 0;
+  max-height: 360px;
+  overflow-y: auto;
+}
+
+.historial-lista li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 12px;
+  margin-bottom: 8px;
+  border-radius: 12px;
+  background: var(--lila-suave);
+  border-left: 4px solid var(--rosa);
+}
+
+.calculo {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.calculo strong {
+  color: var(--violeta);
+}
+
+.fecha {
+  font-size: 0.78rem;
+  color: #9d7cc1;
+  white-space: nowrap;
+}
+
+.boton-pildora {
+  margin-top: 14px;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 999px;
+  background: var(--degradado);
+  color: #fff;
+  font-family: "Poppins", sans-serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgba(236, 72, 153, 0.25);
+}
+
+.boton-pildora:hover {
+  filter: brightness(1.08);
+}
+
+.boton-pildora:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  filter: none;
+}
+
+/* ===== Pantallas pequeñas ===== */
+@media (max-width: 720px) {
+  .calculadora,
+  .historial {
+    width: 100%;
+    max-width: 420px;
+  }
+
+  .historial-lista li {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+  }
+}
