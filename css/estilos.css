@@ -34,13 +34,13 @@ h2 {
   margin: 0;
 }
 
-/* ===== Encabezado y pie ===== */
-.encabezado {
+/* ===== Portada y pie ===== */
+.portada {
   text-align: center;
-  padding: 22px 16px 6px;
+  padding: 22px 16px 4px;
 }
 
-.encabezado h1 {
+.portada h1 {
   font-size: 1.9rem;
   background: var(--degradado);
   -webkit-background-clip: text;
@@ -48,7 +48,7 @@ h2 {
   color: transparent;
 }
 
-.encabezado p {
+.portada p {
   margin: 4px 0 0;
   color: #6b4f8f;
 }
@@ -57,22 +57,22 @@ h2 {
   text-align: center;
   font-size: 0.85rem;
   color: #8a6fb0;
-  padding: 4px 16px 18px;
+  padding: 0 16px 18px;
 }
 
-/* ===== Distribución ===== */
-.contenedor {
+/* ===== Una sola columna: calculadora arriba, bitácora debajo ===== */
+.columna {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  align-items: stretch;
-  gap: 24px;
-  max-width: 900px;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  max-width: 640px;
   margin: 0 auto;
   padding: 16px;
 }
 
 .tarjeta {
+  width: 100%;
   background: #fff;
   border: 1px solid var(--borde);
   border-radius: var(--radio);
@@ -81,18 +81,10 @@ h2 {
 }
 
 .calculadora {
-  width: 340px;
-  max-width: 100%;
+  max-width: 360px;
 }
 
-.historial {
-  flex: 1 1 320px;
-  max-width: 440px;
-  display: flex;
-  flex-direction: column;
-}
-
-/* ===== Pantalla de dos líneas ===== */
+/* ===== Visor de dos líneas ===== */
 .visor {
   background: linear-gradient(135deg, #f5f3ff, #fdf2f8);
   border: 1px solid var(--borde);
@@ -100,13 +92,13 @@ h2 {
   padding: 10px 16px;
   margin-bottom: 16px;
   text-align: right;
-  height: 96px;
+  height: 92px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
 }
 
-.visor-operacion {
+.visor-cuenta {
   min-height: 1.4em;
   font-size: 0.95rem;
   color: #8b5cf6;
@@ -115,7 +107,7 @@ h2 {
   text-overflow: ellipsis;
 }
 
-.visor-numero {
+.visor-valor {
   font-family: "Poppins", sans-serif;
   font-size: 2.3rem;
   font-weight: 600;
@@ -123,27 +115,27 @@ h2 {
   overflow-wrap: anywhere;
 }
 
-/* numeros muy largos usan letra mas pequena para caber en la pantalla */
-.visor-numero.largo {
+/* numeros largos con letra mas chica para que quepan */
+.visor-valor.chico {
   font-size: 1.5rem;
 }
 
-.visor-numero.error {
+.visor-valor.aviso {
   font-size: 1.05rem;
   line-height: 1.3;
   color: #db2777;
 }
 
-/* ===== Teclas con efecto de pulsación ===== */
-.teclado {
+/* ===== Botonera: signos arriba, AC/DEL a la derecha ===== */
+.botonera {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 10px;
 }
 
-.tecla {
-  --sombra-tecla: #e9d5ff;
-  height: 54px;
+.boton {
+  --sombra-boton: #e9d5ff;
+  height: 52px;
   border: 1px solid var(--borde);
   border-radius: 14px;
   background: #fff;
@@ -151,68 +143,72 @@ h2 {
   font-family: "Poppins", sans-serif;
   font-size: 1.25rem;
   cursor: pointer;
-  box-shadow: 0 4px 0 var(--sombra-tecla);
+  box-shadow: 0 4px 0 var(--sombra-boton);
   transition: transform 0.08s, box-shadow 0.08s, background 0.15s;
 }
 
-.tecla:hover {
+.boton:hover {
   background: var(--lila-suave);
 }
 
-.tecla:active,
-.tecla.pulsada {
+.boton:active,
+.boton.hundido {
   transform: translateY(3px);
-  box-shadow: 0 1px 0 var(--sombra-tecla);
+  box-shadow: 0 1px 0 var(--sombra-boton);
 }
 
-.tecla:focus-visible {
+.boton:focus-visible {
   outline: 3px solid #c4b5fd;
   outline-offset: 2px;
 }
 
-.tecla-doble {
+.boton--ancho {
   grid-column: span 2;
 }
 
-.tecla-funcion {
-  --sombra-tecla: #fbcfe8;
-  background: #fdf2f8;
-  border-color: #fbcfe8;
-  color: #be185d;
-}
-
-.tecla-funcion:hover {
-  background: #fce7f3;
-}
-
-.tecla-operador {
-  --sombra-tecla: #ddd6fe;
+.boton--signo {
+  --sombra-boton: #ddd6fe;
+  height: 44px;
   background: #ede9fe;
   color: var(--violeta);
   font-weight: 700;
 }
 
-/* operador elegido que espera el segundo número */
-.tecla-operador.activo {
+/* signo elegido, esperando el segundo numero */
+.boton--signo.encendido {
   background: var(--violeta);
   border-color: var(--violeta);
   color: #fff;
 }
 
-.tecla-igual {
-  --sombra-tecla: #a21caf;
+.boton--control {
+  --sombra-boton: #fbcfe8;
+  background: #fdf2f8;
+  border-color: #fbcfe8;
+  color: #be185d;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.boton--control:hover {
+  background: #fce7f3;
+}
+
+.boton--total {
+  --sombra-boton: #a21caf;
   border: none;
   background: var(--degradado);
   color: #fff;
   font-weight: 700;
 }
 
-.tecla-igual:hover {
+.boton--total:hover {
   background: var(--degradado);
   filter: brightness(1.08);
 }
 
-.ayuda {
+.atajos {
   margin: 16px 0 0;
   font-size: 0.82rem;
   color: #7a5ea3;
@@ -228,110 +224,139 @@ kbd {
   padding: 0 5px;
 }
 
-/* ===== Historial ===== */
-.historial-cabecera {
+/* ===== Bitácora ===== */
+.bitacora-cabecera {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  margin-bottom: 12px;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  margin-bottom: 14px;
 }
 
-.historial-cabecera h2 {
-  font-size: 1.3rem;
+.bitacora-cabecera h2 {
+  font-size: 1.2rem;
   color: var(--violeta);
 }
 
-.contador {
-  min-width: 32px;
-  padding: 2px 10px;
-  border-radius: 999px;
-  background: var(--degradado);
-  color: #fff;
-  font-weight: 700;
-  text-align: center;
-}
-
-.historial-vacio {
+.cantidad {
   flex: 1;
-  margin: 0;
-  padding: 24px 12px;
-  text-align: center;
-  color: #9d84c2;
-  border: 2px dashed var(--borde);
-  border-radius: 12px;
-}
-
-.historial-lista {
-  flex: 1;
-  list-style: none;
-  margin: 0;
-  padding: 0 4px 0 0;
-  max-height: 360px;
-  overflow-y: auto;
-}
-
-.historial-lista li {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  padding: 9px 12px;
-  margin-bottom: 8px;
-  border-radius: 12px;
-  background: var(--lila-suave);
-  border-left: 4px solid var(--rosa);
-}
-
-.calculo {
-  font-weight: 600;
-  overflow-wrap: anywhere;
-}
-
-.calculo strong {
-  color: var(--violeta);
-}
-
-.fecha {
-  font-size: 0.78rem;
+  font-size: 0.85rem;
   color: #9d7cc1;
-  white-space: nowrap;
 }
 
-.boton-pildora {
-  margin-top: 14px;
-  padding: 12px 20px;
-  border: none;
-  border-radius: 999px;
-  background: var(--degradado);
-  color: #fff;
+.boton-vaciar {
+  padding: 6px 14px;
+  border: 1.5px solid var(--rosa);
+  border-radius: 10px;
+  background: transparent;
+  color: #be185d;
   font-family: "Poppins", sans-serif;
-  font-size: 0.95rem;
+  font-size: 0.82rem;
   font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 6px 16px rgba(236, 72, 153, 0.25);
 }
 
-.boton-pildora:hover {
-  filter: brightness(1.08);
+.boton-vaciar:hover {
+  background: #fdf2f8;
 }
 
-.boton-pildora:disabled {
-  opacity: 0.45;
+.boton-vaciar:disabled {
+  opacity: 0.4;
   cursor: not-allowed;
-  filter: none;
+  background: transparent;
 }
 
-/* ===== Pantallas pequeñas ===== */
-@media (max-width: 720px) {
-  .calculadora,
-  .historial {
-    width: 100%;
-    max-width: 420px;
+.bitacora-vacia {
+  margin: 0;
+  padding: 18px 12px;
+  text-align: center;
+  color: #9d84c2;
+  background: var(--lila-suave);
+  border-radius: 12px;
+}
+
+.rollo {
+  max-height: 380px;
+  overflow-y: auto;
+  border: 1px solid var(--borde);
+  border-radius: 12px;
+}
+
+.bitacora-tabla {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.bitacora-tabla th {
+  position: sticky;
+  top: 0;
+  background: var(--violeta);
+  color: #fff;
+  font-family: "Poppins", sans-serif;
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-align: left;
+  padding: 8px 10px;
+}
+
+.bitacora-tabla td {
+  padding: 8px 10px;
+  border-top: 1px solid var(--lila-suave);
+}
+
+.bitacora-tabla tbody tr:nth-child(even) {
+  background: #fdf8ff;
+}
+
+.bitacora-tabla .num {
+  color: #9d7cc1;
+  font-size: 0.82rem;
+}
+
+.bitacora-tabla .total {
+  font-weight: 700;
+  color: var(--violeta);
+}
+
+.bitacora-tabla .cuando {
+  font-size: 0.78rem;
+  color: #9d7cc1;
+}
+
+.quitar {
+  width: 26px;
+  height: 26px;
+  border: none;
+  border-radius: 50%;
+  background: #fdf2f8;
+  color: #be185d;
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.quitar:hover {
+  background: var(--rosa);
+  color: #fff;
+}
+
+.solo-lector {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+/* ===== Celular ===== */
+@media (max-width: 520px) {
+  .bitacora-tabla {
+    font-size: 0.88rem;
   }
 
-  .historial-lista li {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 2px;
+  .bitacora-tabla th,
+  .bitacora-tabla td {
+    padding: 7px 6px;
   }
 }

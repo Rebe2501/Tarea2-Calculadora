@@ -1,287 +1,304 @@
 /*
- * Calculadora WEB - Rebeca Mary Astacio Bryan (2025-2264)
- * JavaScript ES5.
+ * Calculadora de bolsillo - Rebeca Mary Astacio Bryan (2025-2264)
+ * Escrita en ES5: solo var y function.
  *
- * Funciona como una calculadora de bolsillo (maquina de estados):
- * se guarda el operando A, luego el operador y despues se escribe el operando B.
- * Al pulsar "=" o al elegir otro operador se resuelve la operacion pendiente.
+ * Se comporta como una calculadora fisica sencilla: primero se escribe un
+ * numero, luego el signo y despues el segundo numero. La cuenta se cierra con
+ * "=" o al pulsar otro signo, y entonces se anota en la bitacora.
  */
 
-var CLAVE_HISTORIAL = 'rebeca_historial';
-var SIMBOLOS = { '+': '+', '-': '−', '*': '×', '/': '÷' };
-var MENSAJE_DIVISION = 'No se puede dividir entre cero';
+var CLAVE_BITACORA = 'calcRebeca.bitacora';
+var GLIFOS = { '+': '+', '-': '−', '*': '×', '/': '÷' };
+var AVISO_CERO = 'No se puede dividir entre cero';
 
-var estado = {
-  operandoA: null,    // numero escrito antes del operador
-  operador: null,     // '+', '-', '*', '/' o null si no hay operacion pendiente
-  entrada: '0',       // texto del numero que se ve abajo en la pantalla
-  numeroNuevo: true,  // la proxima cifra empieza un numero nuevo
-  resumen: '',        // linea de arriba despues de un resultado, ej. "12 + 8 ="
-  hayError: false
+var maquina = {
+  primero: null,       // numero escrito antes del signo
+  signo: null,         // '+', '-', '*', '/' o null si no hay cuenta abierta
+  texto: '0',          // numero que se ve en grande
+  empezarNumero: true, // la siguiente cifra arranca un numero desde cero
+  linea: '',           // linea pequena de arriba, ej. "36 + 27 ="
+  fallo: false
 };
 
-var historial = [];
-var visorOperacion, visorNumero, listaHistorial, mensajeVacio, contador, btnEliminar;
+var bitacora = [];
+var visorCuenta, visorValor, filasBitacora, rollo, avisoVacio, cantidad, btnVaciar;
 
-/* ---------- Calculo ---------- */
+/* ---------- Aritmetica ---------- */
 
-// Quita los errores de coma flotante: 0.1 + 0.2 da 0.3 y no 0.30000000000000004
-function redondear(numero) {
-  return parseFloat(numero.toPrecision(12));
+// toPrecision(12) evita resultados como 0.7999999999999999
+function pulir(n) {
+  return parseFloat(n.toPrecision(12));
 }
 
-function operar(a, operador, b) {
-  if (operador === '+') return a + b;
-  if (operador === '-') return a - b;
-  if (operador === '*') return a * b;
+function aplicar(a, signo, b) {
+  if (signo === '+') return a + b;
+  if (signo === '-') return a - b;
+  if (signo === '*') return a * b;
   return a / b;
 }
 
-// Resuelve "A operador B". Devuelve false si hubo division entre cero.
-function resolver() {
-  var a = estado.operandoA;
-  var b = parseFloat(estado.entrada);
-  var texto = a + ' ' + SIMBOLOS[estado.operador] + ' ' + b;
+// Cierra la cuenta "primero signo texto". Devuelve false si era una division entre cero.
+function cerrarCuenta() {
+  var a = maquina.primero;
+  var b = parseFloat(maquina.texto);
+  var cuenta = a + ' ' + GLIFOS[maquina.signo] + ' ' + b;
 
-  estado.operandoA = null;
-  estado.numeroNuevo = true;
-  estado.resumen = texto;
+  maquina.primero = null;
+  maquina.empezarNumero = true;
+  maquina.linea = cuenta;
 
-  if (estado.operador === '/' && b === 0) {
-    estado.operador = null;
-    estado.hayError = true; // el error no se guarda en el historial
+  if (maquina.signo === '/' && b === 0) {
+    maquina.signo = null;
+    maquina.fallo = true; // no se anota nada
     return false;
   }
 
-  var resultado = redondear(operar(a, estado.operador, b));
-  estado.operador = null;
-  estado.entrada = String(resultado);
-  estado.resumen = texto + ' =';
-  agregarAlHistorial(texto, resultado);
+  var valor = pulir(aplicar(a, maquina.signo, b));
+  maquina.signo = null;
+  maquina.texto = String(valor);
+  maquina.linea = cuenta + ' =';
+  anotar(cuenta, valor);
   return true;
 }
 
-/* ---------- Acciones de las teclas ---------- */
+/* ---------- Botones ---------- */
 
-function escribirDigito(digito) {
-  if (estado.hayError) reiniciar();
+function teclearCifra(cifra) {
+  if (maquina.fallo) todoACero();
 
-  if (estado.numeroNuevo) {
-    estado.entrada = digito === '.' ? '0.' : digito;
-    estado.numeroNuevo = false;
-    estado.resumen = '';
-  } else if (digito === '.') {
-    if (estado.entrada.indexOf('.') === -1) estado.entrada += '.';
-  } else if (estado.entrada === '0') {
-    estado.entrada = digito;
-  } else if (estado.entrada.replace(/[-.]/g, '').length < 15) {
-    estado.entrada += digito;
+  if (maquina.empezarNumero) {
+    maquina.texto = cifra === '.' ? '0.' : cifra;
+    maquina.empezarNumero = false;
+    maquina.linea = '';
+  } else if (cifra === '.') {
+    if (maquina.texto.indexOf('.') === -1) maquina.texto += '.';
+  } else if (maquina.texto === '0') {
+    maquina.texto = cifra;
+  } else if (maquina.texto.replace(/[-.]/g, '').length < 15) {
+    maquina.texto += cifra;
   }
-  pintar();
+  refrescarVisor();
 }
 
-function elegirOperador(operador) {
-  if (estado.hayError) return;
+function fijarSigno(signo) {
+  if (maquina.fallo) return;
 
-  // encadenado (ej. 2 + 3 ×): primero se resuelve lo que estaba pendiente
-  if (estado.operador !== null && !estado.numeroNuevo && !resolver()) {
-    pintar();
+  // 2 + 3 x : antes de cambiar de signo se cierra la cuenta abierta
+  if (maquina.signo !== null && !maquina.empezarNumero && !cerrarCuenta()) {
+    refrescarVisor();
     return;
   }
-  estado.operandoA = parseFloat(estado.entrada);
-  estado.operador = operador;
-  estado.numeroNuevo = true;
-  pintar();
+  maquina.primero = parseFloat(maquina.texto);
+  maquina.signo = signo;
+  maquina.empezarNumero = true;
+  refrescarVisor();
 }
 
-function calcularResultado() {
-  if (estado.hayError || estado.operador === null) return;
-  resolver();
-  pintar();
+function pedirTotal() {
+  if (maquina.fallo || maquina.signo === null) return;
+  cerrarCuenta();
+  refrescarVisor();
 }
 
-function borrarUltimo() {
-  if (estado.hayError) {
-    reiniciar();
+function quitarCifra() {
+  if (maquina.fallo) {
+    todoACero();
     return;
   }
-  if (estado.numeroNuevo) return; // no se borran resultados ni el operando A
-  var recortado = estado.entrada.slice(0, -1);
-  estado.entrada = (recortado === '' || recortado === '-') ? '0' : recortado;
-  pintar();
+  if (maquina.empezarNumero) return; // un total o el primer numero no se recortan
+  var resto = maquina.texto.slice(0, -1);
+  maquina.texto = (resto === '' || resto === '-') ? '0' : resto;
+  refrescarVisor();
 }
 
-function reiniciar() {
-  estado.operandoA = null;
-  estado.operador = null;
-  estado.entrada = '0';
-  estado.numeroNuevo = true;
-  estado.resumen = '';
-  estado.hayError = false;
-  pintar();
+function todoACero() {
+  maquina.primero = null;
+  maquina.signo = null;
+  maquina.texto = '0';
+  maquina.empezarNumero = true;
+  maquina.linea = '';
+  maquina.fallo = false;
+  refrescarVisor();
 }
 
-function ejecutar(accion, valor) {
-  if (accion === 'digito') escribirDigito(valor);
-  else if (accion === 'operador') elegirOperador(valor);
-  else if (accion === 'igual') calcularResultado();
-  else if (accion === 'retroceso') borrarUltimo();
-  else if (accion === 'limpiar') reiniciar();
+function despachar(accion, valor) {
+  if (accion === 'cifra') teclearCifra(valor);
+  else if (accion === 'signo') fijarSigno(valor);
+  else if (accion === 'total') pedirTotal();
+  else if (accion === 'del') quitarCifra();
+  else if (accion === 'ac') todoACero();
 }
 
-/* ---------- Pantalla ---------- */
+/* ---------- Visor ---------- */
 
-function pintar() {
-  if (estado.hayError) {
-    visorOperacion.textContent = estado.resumen;
-    visorNumero.textContent = MENSAJE_DIVISION;
-    visorNumero.className = 'visor-numero error';
+function refrescarVisor() {
+  if (maquina.fallo) {
+    visorCuenta.textContent = maquina.linea;
+    visorValor.textContent = AVISO_CERO;
+    visorValor.className = 'visor-valor aviso';
   } else {
-    visorOperacion.textContent = estado.operador !== null
-      ? estado.operandoA + ' ' + SIMBOLOS[estado.operador]
-      : estado.resumen;
-    visorNumero.textContent = estado.entrada;
-    visorNumero.className = estado.entrada.length > 10 ? 'visor-numero largo' : 'visor-numero';
+    visorCuenta.textContent = maquina.signo !== null
+      ? maquina.primero + ' ' + GLIFOS[maquina.signo]
+      : maquina.linea;
+    visorValor.textContent = maquina.texto;
+    visorValor.className = maquina.texto.length > 10 ? 'visor-valor chico' : 'visor-valor';
   }
 
-  // resalta el operador que esta esperando el segundo numero
-  var operadores = document.querySelectorAll('[data-accion="operador"]');
-  for (var i = 0; i < operadores.length; i++) {
-    if (estado.numeroNuevo && operadores[i].getAttribute('data-valor') === estado.operador) {
-      operadores[i].classList.add('activo');
-    } else {
-      operadores[i].classList.remove('activo');
-    }
+  // el signo elegido queda encendido mientras se espera el segundo numero
+  var signos = document.querySelectorAll('[data-accion="signo"]');
+  for (var i = 0; i < signos.length; i++) {
+    var encendido = maquina.empezarNumero && signos[i].getAttribute('data-valor') === maquina.signo;
+    signos[i].className = 'boton boton--signo' + (encendido ? ' encendido' : '');
   }
 }
 
-/* ---------- Historial en localStorage ---------- */
+/* ---------- Bitacora en localStorage ---------- */
 
-function dosCifras(n) {
+function conCero(n) {
   return (n < 10 ? '0' : '') + n;
 }
 
-function fechaActual() {
+function sello() {
   var d = new Date();
-  return dosCifras(d.getDate()) + '/' + dosCifras(d.getMonth() + 1) + '/' + d.getFullYear() +
-    ' ' + dosCifras(d.getHours()) + ':' + dosCifras(d.getMinutes()) + ':' + dosCifras(d.getSeconds());
+  return conCero(d.getDate()) + '/' + conCero(d.getMonth() + 1) + '/' + d.getFullYear() +
+    ' ' + conCero(d.getHours()) + ':' + conCero(d.getMinutes()) + ':' + conCero(d.getSeconds());
 }
 
-function cargarHistorial() {
+function leerBitacora() {
   try {
-    historial = JSON.parse(localStorage.getItem(CLAVE_HISTORIAL)) || [];
+    bitacora = JSON.parse(localStorage.getItem(CLAVE_BITACORA)) || [];
   } catch (e) {
-    historial = [];
+    bitacora = [];
   }
 }
 
-function guardarHistorial() {
+function escribirBitacora() {
   try {
-    localStorage.setItem(CLAVE_HISTORIAL, JSON.stringify(historial));
+    if (bitacora.length) localStorage.setItem(CLAVE_BITACORA, JSON.stringify(bitacora));
+    else localStorage.removeItem(CLAVE_BITACORA);
   } catch (e) {
-    // si el navegador bloquea localStorage el historial solo vive en memoria
+    // con localStorage bloqueado la bitacora dura solo mientras la pagina este abierta
   }
+  dibujarBitacora();
 }
 
-function agregarAlHistorial(operacion, resultado) {
-  historial.push({ operacion: operacion, resultado: resultado, fecha: fechaActual() });
-  guardarHistorial();
-  pintarHistorial();
+function anotar(cuenta, valor) {
+  bitacora.push({ cuenta: cuenta, valor: valor, cuando: sello() });
+  escribirBitacora();
+  rollo.scrollTop = rollo.scrollHeight; // la anotacion nueva queda a la vista
 }
 
-function eliminarHistorial() {
-  if (historial.length === 0) return;
-  if (!confirm('¿Seguro que deseas eliminar todo el historial?')) return;
-  historial = [];
-  try {
-    localStorage.removeItem(CLAVE_HISTORIAL);
-  } catch (e) {}
-  pintarHistorial();
+function quitarAnotacion(indice) {
+  bitacora.splice(indice, 1);
+  escribirBitacora();
 }
 
-function pintarHistorial() {
-  listaHistorial.innerHTML = '';
+function vaciarBitacora() {
+  if (!bitacora.length) return;
+  if (!confirm('Se borrarán las ' + bitacora.length + ' anotaciones de la bitácora. ¿Continuar?')) return;
+  bitacora = [];
+  escribirBitacora();
+}
 
-  // el calculo mas reciente va primero
-  for (var i = historial.length - 1; i >= 0; i--) {
-    var item = document.createElement('li');
-    var calculo = document.createElement('span');
-    var resultado = document.createElement('strong');
-    var fecha = document.createElement('span');
+function celda(fila, texto, clase) {
+  var td = document.createElement('td');
+  td.textContent = texto;
+  if (clase) td.className = clase;
+  fila.appendChild(td);
+  return td;
+}
 
-    calculo.className = 'calculo';
-    calculo.appendChild(document.createTextNode(historial[i].operacion + ' = '));
-    resultado.textContent = historial[i].resultado;
-    calculo.appendChild(resultado);
+// Orden cronologico: la primera cuenta arriba, la ultima abajo
+function dibujarBitacora() {
+  filasBitacora.innerHTML = '';
 
-    fecha.className = 'fecha';
-    fecha.textContent = historial[i].fecha;
+  for (var i = 0; i < bitacora.length; i++) {
+    var fila = document.createElement('tr');
+    var quitar = document.createElement('button');
 
-    item.appendChild(calculo);
-    item.appendChild(fecha);
-    listaHistorial.appendChild(item);
+    celda(fila, i + 1, 'num');
+    celda(fila, bitacora[i].cuenta);
+    celda(fila, bitacora[i].valor, 'total');
+    celda(fila, bitacora[i].cuando, 'cuando');
+
+    quitar.type = 'button';
+    quitar.className = 'quitar';
+    quitar.setAttribute('data-indice', i);
+    quitar.setAttribute('aria-label', 'Quitar la anotación ' + (i + 1));
+    quitar.title = 'Quitar esta anotación';
+    quitar.textContent = '×';
+    celda(fila, '').appendChild(quitar);
+
+    filasBitacora.appendChild(fila);
   }
 
-  contador.textContent = historial.length;
-  mensajeVacio.style.display = historial.length ? 'none' : 'block';
-  listaHistorial.style.display = historial.length ? 'block' : 'none';
-  btnEliminar.disabled = historial.length === 0;
+  var n = bitacora.length;
+  cantidad.textContent = n + (n === 1 ? ' anotación' : ' anotaciones');
+  avisoVacio.style.display = n ? 'none' : 'block';
+  rollo.style.display = n ? 'block' : 'none';
+  btnVaciar.disabled = n === 0;
 }
 
 /* ---------- Eventos ---------- */
 
-function alHacerClic(evento) {
-  var boton = evento.target;
-  if (boton.tagName !== 'BUTTON') return;
-  ejecutar(boton.getAttribute('data-accion'), boton.getAttribute('data-valor'));
+function clicEnBotonera(evento) {
+  var b = evento.target;
+  if (b.tagName === 'BUTTON') despachar(b.getAttribute('data-accion'), b.getAttribute('data-valor'));
 }
 
-// Hunde la tecla en pantalla cuando se usa el teclado fisico
-function hundirTecla(accion, valor) {
+function clicEnBitacora(evento) {
+  var b = evento.target;
+  if (b.tagName === 'BUTTON') quitarAnotacion(parseInt(b.getAttribute('data-indice'), 10));
+}
+
+// Con el teclado fisico, el boton dibujado se hunde un instante
+function marcarBoton(accion, valor) {
   var selector = '[data-accion="' + accion + '"]' + (valor ? '[data-valor="' + valor + '"]' : '');
-  var boton = document.querySelector(selector);
-  if (!boton) return;
-  boton.classList.add('pulsada');
+  var b = document.querySelector(selector);
+  if (!b) return;
+  b.classList.add('hundido');
   setTimeout(function () {
-    boton.classList.remove('pulsada');
+    b.classList.remove('hundido');
   }, 120);
 }
 
-function alTeclear(evento) {
+function teclaFisica(evento) {
   if (evento.ctrlKey || evento.metaKey || evento.altKey) return;
 
-  var tecla = evento.key;
+  var k = evento.key;
   var accion = null;
   var valor = null;
 
-  if (/^[0-9.]$/.test(tecla)) { accion = 'digito'; valor = tecla; }
-  else if (tecla === ',') { accion = 'digito'; valor = '.'; }
-  else if (/^[+\-*\/]$/.test(tecla)) { accion = 'operador'; valor = tecla; }
-  else if (tecla === 'Enter' || tecla === '=') accion = 'igual';
-  else if (tecla === 'Backspace') accion = 'retroceso';
-  else if (tecla === 'Escape' || tecla === 'Delete') accion = 'limpiar';
+  if (/^[0-9.]$/.test(k)) { accion = 'cifra'; valor = k; }
+  else if (k === ',') { accion = 'cifra'; valor = '.'; }
+  else if (/^[+\-*\/]$/.test(k)) { accion = 'signo'; valor = k; }
+  else if (k === 'Enter' || k === '=') accion = 'total';
+  else if (k === 'Backspace') accion = 'del';
+  else if (k === 'Escape' || k === 'Delete') accion = 'ac';
   else return;
 
-  evento.preventDefault(); // evita que Enter vuelva a pulsar el boton enfocado
-  ejecutar(accion, valor);
-  hundirTecla(accion, valor);
+  evento.preventDefault(); // Enter no debe volver a pulsar el boton que tenga el foco
+  despachar(accion, valor);
+  marcarBoton(accion, valor);
 }
 
-function iniciar() {
-  visorOperacion = document.getElementById('visorOperacion');
-  visorNumero = document.getElementById('visorNumero');
-  listaHistorial = document.getElementById('listaHistorial');
-  mensajeVacio = document.getElementById('historialVacio');
-  contador = document.getElementById('contador');
-  btnEliminar = document.getElementById('btnEliminar');
+function arrancar() {
+  visorCuenta = document.getElementById('visorCuenta');
+  visorValor = document.getElementById('visorValor');
+  filasBitacora = document.getElementById('filasBitacora');
+  rollo = document.getElementById('rollo');
+  avisoVacio = document.getElementById('bitacoraVacia');
+  cantidad = document.getElementById('cantidad');
+  btnVaciar = document.getElementById('btnVaciar');
 
-  document.getElementById('teclado').addEventListener('click', alHacerClic);
-  btnEliminar.addEventListener('click', eliminarHistorial);
-  document.addEventListener('keydown', alTeclear);
+  document.getElementById('botonera').addEventListener('click', clicEnBotonera);
+  filasBitacora.addEventListener('click', clicEnBitacora);
+  btnVaciar.addEventListener('click', vaciarBitacora);
+  document.addEventListener('keydown', teclaFisica);
 
-  cargarHistorial();
-  pintar();
-  pintarHistorial();
+  leerBitacora();
+  refrescarVisor();
+  dibujarBitacora();
 }
 
-iniciar();
+arrancar();
